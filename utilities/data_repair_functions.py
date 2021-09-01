@@ -1,9 +1,17 @@
-from forex_python.converter import CurrencyRates
+from forex_python.converter import CurrencyRates, RatesNotAvailableError
+from currency_converter import CurrencyConverter
 
-factor_usd = CurrencyRates().get_rate('USD', 'PLN')
-factor_gbp = CurrencyRates().get_rate('GBP', 'PLN')
-factor_eur = CurrencyRates().get_rate('EUR', 'PLN')
-factor_huf = CurrencyRates().get_rate('HUF', 'PLN')
+try:
+    factor_usd = CurrencyRates().get_rate('USD', 'PLN')
+    factor_gbp = CurrencyRates().get_rate('GBP', 'PLN')
+    factor_eur = CurrencyRates().get_rate('EUR', 'PLN')
+    factor_huf = CurrencyRates().get_rate('HUF', 'PLN')
+except RatesNotAvailableError:
+    c = CurrencyConverter()
+    factor_usd = c.convert(1, 'USD', 'PLN')
+    factor_gbp = c.convert(1, 'GBP', 'PLN')
+    factor_eur = c.convert(1, 'EUR', 'PLN')
+    factor_huf = c.convert(1, 'HUF', 'PLN')
 
 
 # ========================== functions for skills ==========================

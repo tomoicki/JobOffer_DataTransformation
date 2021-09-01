@@ -1,2 +1,3 @@
 forex-python==1.6
+CurrencyConverter==0.16.4
 pandas~=1.3.2

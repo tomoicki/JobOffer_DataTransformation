@@ -1,5 +1,5 @@
 import pandas
-from utilities import data_repair_functions
+from JobOffers_DataTransformation import data_repair_functions
 from collections import Counter
 
 

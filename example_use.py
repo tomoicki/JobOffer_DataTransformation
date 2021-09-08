@@ -1,6 +1,6 @@
 import json
-from utilities.data_repair_procedure import nofluff_repair_procedure, justjoin_repair_procedure
-from utilities.data_repair_procedure import get_skills_x_plus, both_repair_procedure
+from JobOffers_DataTransformation.data_repair_procedure import nofluff_repair_procedure, justjoin_repair_procedure
+from JobOffers_DataTransformation.data_repair_procedure import get_skills_x_plus, both_repair_procedure
 
 
 with open('nofluff_example_data.json', 'r') as nof:

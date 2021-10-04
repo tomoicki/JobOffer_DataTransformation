@@ -1,25 +1,23 @@
 from __future__ import annotations
 import pandas
-from typing import Union
+from typing import Union, Any
 from job_offers_data_transformation import data_repair_functions as drf
 from collections import Counter
 
 
-def nofluff_repair_procedure(given: list[dict[str, Union[str, list[dict[str, Union[str, dict[str, str], int]]], dict[str, int], int]]]) -> (pandas.DataFrame, list[str]):
+def nofluff_repair_procedure(given: list[dict[str, Any]]) -> (pandas.DataFrame, list[str]):
     """Data standardization so its similar to justjoin data."""
     nofluff_data = pandas.DataFrame(given)
 
     #  repair offer link
     nofluff_data['offer_url'] = nofluff_data['offer_url'].map(lambda x: 'https://nofluffjobs.com/pl/job/' + x)
-
     #  repair cities
-    for function_to_apply in [drf.nf_repair_locations_to_list, drf.repair_locations_final]:
+    for function_to_apply in [lambda x: [item['city'] for item in x], drf.repair_locations]:
         nofluff_data['location'] = nofluff_data['location'].map(function_to_apply)
-
     #  repair employment types
     #  1st step is to change dict to list and get rid of excess info
     nofluff_data['employment_types'] = \
-        nofluff_data['employment_types'].map(drf.nf_employment_wages_repairer)
+        nofluff_data['employment_types'].map(drf.nfjobs_employment_wages_repairer)
     #  2nd step is to split into their own columns
     #  salaries for b2b
     nofluff_data['b2b_min'] = nofluff_data['b2b_max'] = nofluff_data['employment_types'].map(
@@ -56,7 +54,7 @@ def nofluff_repair_procedure(given: list[dict[str, Union[str, list[dict[str, Uni
     #  to repair skills/tech we have to do it in several steps
     for column_name in ['skills_must', 'skills_nice']:
         #  step 1: plucking just skills (keys) from dictionaries
-        nofluff_data[column_name] = nofluff_data[column_name].map(drf.nf_skills_repairer)
+        nofluff_data[column_name] = nofluff_data[column_name].map(lambda x: {d['value']: "?" for d in x})
         nofluff_data[column_name] = nofluff_data[column_name].map(lambda x: list(x.keys()))
         #  step 2: cleaning from excess spaces and lowering to not miss out duplicates in next step
         nofluff_data[column_name].update(nofluff_data[column_name].map(lambda x: [item.lower().strip() for item in x]))
@@ -69,7 +67,7 @@ def nofluff_repair_procedure(given: list[dict[str, Union[str, list[dict[str, Uni
     return nofluff_data, all_skills
 
 
-def justjoin_repair_procedure(given: list[dict[str, Union[str, int, bool, list[dict[str, Union[str, int, dict[ str, Union[str, int]]]]]]]]) -> (pandas.DataFrame, list[str]):
+def justjoin_repair_procedure(given: list[dict[str, Any]]) -> (pandas.DataFrame, list[str]):
     """Data standardization so its similar to nofluff data."""
     justjoin_data = pandas.DataFrame(given)
 
@@ -83,7 +81,7 @@ def justjoin_repair_procedure(given: list[dict[str, Union[str, int, bool, list[d
     #  the split to make it identical to nofluff data
     justjoin_data['location'] = justjoin_data['location'].map(lambda x: x.split(','))
     #  and now we use repair_locations_final() that works for both data sets
-    justjoin_data['location'] = justjoin_data['location'].map(drf.repair_locations_final)
+    justjoin_data['location'] = justjoin_data['location'].map(drf.repair_locations)
 
     #  list experience_level so its the same as in nofluff
     justjoin_data['experience'] = justjoin_data['experience'].map(lambda x: [x.capitalize()])
@@ -91,7 +89,7 @@ def justjoin_repair_procedure(given: list[dict[str, Union[str, int, bool, list[d
     #  repair employment types
     #  1st step is to change dict to list and get rid of excess info
     justjoin_data['employment_types'] = justjoin_data['employment_types'].map(
-        drf.jj_employment_types_repairer)
+        drf.justjoin_employment_wages_repairer)
 
     #  2nd step is to split into their own columns
     #  salaries for b2b
@@ -126,12 +124,10 @@ def justjoin_repair_procedure(given: list[dict[str, Union[str, int, bool, list[d
     justjoin_data.drop(columns='employment_types', inplace=True)
 
     #  to repair skills/tech we have to do it in several steps
-    justjoin_data['skills_must'] = justjoin_data['skills'].map(drf.jj_skills_repairer)
-    justjoin_data['skills_nice'] = ''
-    justjoin_data['skills_nice'] = justjoin_data['skills_nice'].map(lambda x: {} if x == '' else {})
+    justjoin_data['skills_nice'] = justjoin_data['skills'].map(lambda x: [] if x is not None else [])
 
     #  step 1: plucking just skills (keys) from dictionaries
-    justjoin_data['skills_must'] = justjoin_data['skills_must'].map(lambda x: list(x.keys()))
+    justjoin_data['skills_must'] = justjoin_data['skills'].map(lambda x: [dictionary['name'] for dictionary in x])
 
     #  step 2: cleaning from excess spaces and lowering to not miss out duplicates in next step
     justjoin_data['skills_must'].update(justjoin_data['skills_must'].map(

@@ -21,5 +21,5 @@ nofluff, nofluff_skills = nofluff_repair_procedure(nf)
 justjoin, justjoin_skills = justjoin_repair_procedure(jj)
 all_skills = get_skills_x_plus(nofluff_skills, justjoin_skills, 5)
 all_data = both_repair_procedure(justjoin, nofluff, all_skills)
-print(all_data.head())
+# print(all_data.head())
 

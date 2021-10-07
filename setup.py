@@ -13,7 +13,8 @@ setup(
     python_requires=">=3.6",
     install_requires=[
         'forex-python~=1.6',
-        'CurrencyConverter~=0.16.4',
-        'pandas~=1.3.2',
+        'CurrencyConverter~=0.16',
+        'pandas~=1.3',
+        'Unidecode~=1.3',
     ],
 )
